@@ -1,26 +1,27 @@
 import express from "express";
+import Idea from "../models/Idea.js";
 
 const ideaRouter = express.Router();
 
-ideaRouter.get("/", (req, res) => {
-  const ideas = [
-    {
-      title: "Smart Ring",
-      description:
-        "A ring that is able to recognize gestures and act accordingly",
-    },
-    {
-      title: "Star Platinum +",
-      description:
-        "An interactive decoration that lights up and makes sound when a word is spoken",
-    },
-    {
-      title: "Smart backpack",
-      description: "A backpack that keeps track of all your items ",
-    },
-  ];
+//get all ideas
+ideaRouter.get("/", async (req, res, next) => {
+  try {
+    const ideas = await Idea.find();
+    res.json(ideas);
+  } catch (err) {
+    next(err);
+  }
+});
 
-  res.send(ideas);
+//get single idea
+ideaRouter.get("/:id", async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const idea = Idea.findById(id);
+    res.json(idea);
+  } catch (err) {
+    next(err);
+  }
 });
 
 ideaRouter.post("/", (req, res) => {
