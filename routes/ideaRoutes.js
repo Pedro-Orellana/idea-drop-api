@@ -7,7 +7,18 @@ const ideaRouter = express.Router();
 //get all ideas
 ideaRouter.get("/", async (req, res, next) => {
   try {
-    const ideas = await Idea.find();
+    //get the limit from the request
+    const limit = parseInt(req.query._limit);
+
+    //create a query sorting it out by time of creation
+    const query = Idea.find().sort({ createdAt: -1 });
+
+    //use the limit
+    if (!isNaN(limit)) {
+      query.limit(limit);
+    }
+    //get the ideas from the query
+    const ideas = await query.exec();
     res.json(ideas);
   } catch (err) {
     next(err);
