@@ -2,6 +2,8 @@ import express from "express";
 import Idea from "../models/Idea.js";
 import mongoose, { mongo } from "mongoose";
 
+import { protect } from "../middleware/authMiddleware.js";
+
 const ideaRouter = express.Router();
 
 //get all ideas
@@ -48,9 +50,9 @@ ideaRouter.get("/:id", async (req, res, next) => {
 });
 
 //create new idea
-ideaRouter.post("/", async (req, res, next) => {
+ideaRouter.post("/", protect, async (req, res, next) => {
   try {
-    const { title, summary, description, tags } = req.body;
+    const { title, summary, description, tags } = req.body || {};
 
     if (!title.trim() || !summary.trim() || !description.trim()) {
       res.status(400);
@@ -79,7 +81,7 @@ ideaRouter.post("/", async (req, res, next) => {
 });
 
 //delete idea
-ideaRouter.delete("/:id", async (req, res, next) => {
+ideaRouter.delete("/:id", protect, async (req, res, next) => {
   try {
     const { id } = req.params;
 
@@ -101,7 +103,7 @@ ideaRouter.delete("/:id", async (req, res, next) => {
 });
 
 //update idea
-ideaRouter.put("/:id", async (req, res, next) => {
+ideaRouter.put("/:id", protect, async (req, res, next) => {
   try {
     const { id } = req.params;
 
@@ -110,7 +112,7 @@ ideaRouter.put("/:id", async (req, res, next) => {
       throw new Error("Idea not found");
     }
 
-    const { title, summary, description, tags } = req.body;
+    const { title, summary, description, tags } = req.body || {};
 
     if (!title?.trim() || !summary?.trim() || !description?.trim()) {
       res.status(400);
