@@ -133,7 +133,7 @@ authRouter.post("/refresh", async (req, res, next) => {
       throw new Error("No refresh token");
     }
 
-    const { payload } = jwtVerify(token, JWT_SECRET);
+    const { payload } = await jwtVerify(token, JWT_SECRET);
 
     //get the user from using the userId from the payload
     const user = await User.findById(payload.userId);
