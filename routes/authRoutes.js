@@ -17,7 +17,7 @@ authRouter.post("/register", async (req, res, next) => {
       throw new Error("All fields are required");
     }
 
-    const existingUser = User.findOne({ email });
+    const existingUser = await User.findOne({ email });
     if (existingUser) {
       //user already exists. cannot register it again
       res.status(400); //bad request
@@ -25,7 +25,7 @@ authRouter.post("/register", async (req, res, next) => {
     }
 
     //if user doesn't exist, create it and register it
-    const newUser = User.create({ name, email, password });
+    const newUser = await User.create({ name, email, password });
 
     //create tokens
     const payload = { userId: newUser._id.toString() };
@@ -36,12 +36,11 @@ authRouter.post("/register", async (req, res, next) => {
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "none",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
       maxAge: 30 * 24 * 60 * 60 * 1000, //30 days
     });
 
-    res.status(201);
-    res.json({
+    res.status(201).json({
       //pass in the access token in the response
       accessToken,
       user: {
@@ -66,7 +65,7 @@ authRouter.post("/login", async (req, res, next) => {
     }
 
     //find if the user is registered
-    const user = User.findOne({ email });
+    const user = await User.findOne({ email });
     if (!user) {
       //user is not registered
       res.status(401); //unauthorized status
@@ -90,7 +89,7 @@ authRouter.post("/login", async (req, res, next) => {
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "none",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
       maxAge: 30 * 24 * 60 * 60 * 1000, //30 days
     });
 
@@ -115,7 +114,7 @@ authRouter.post("/logout", (req, res) => {
   res.clearCookie("refreshToken", {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
-    sameSite: "none",
+    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
   });
 
   res.status(200).json({
@@ -137,7 +136,7 @@ authRouter.post("/refresh", async (req, res, next) => {
     const { payload } = jwtVerify(token, JWT_SECRET);
 
     //get the user from using the userId from the payload
-    const user = User.findById(payload.userId);
+    const user = await User.findById(payload.userId);
 
     if (!user) {
       res.status(401); //unauthorized status
